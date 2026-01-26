@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 
 @dataclass
+class Destroyed:
+    pass
+
+@dataclass
 class Position:
     x: int
     y: int
@@ -21,4 +25,8 @@ class Combat:
 
 @dataclass
 class AI:
+    pass
+
+@dataclass
+class Player:
     pass
