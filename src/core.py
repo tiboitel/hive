@@ -7,11 +7,7 @@ class System:
 
 
 class World:
-    """Lightweight world container that manages systems and execution order.
-
-    Systems are stored as (priority, system_instance) and executed in
-    increasing priority (lower numbers first).
-    """
+    """Small world container: systems, entities and components."""
 
     def __init__(self):
         self._systems: List[Tuple[int, object]] = []
@@ -48,6 +44,26 @@ class World:
     def destroy_entity(self, entity: int) -> None:
         for comp in self._components.values():
             comp.pop(entity, None)
+
+    # Query APIs
+    def query_entities(self, *component_types):
+        """Yield entity ids that have all requested component types.
+
+        Deterministic: yields ids in ascending order.
+        """
+        if not component_types:
+            return iter(())
+        sets = [set(self._components.get(t, {}).keys()) for t in component_types]
+        if not sets:
+            return iter(())
+        ids = set.intersection(*sets)
+        for eid in sorted(ids):
+            yield eid
+
+    def query(self, *component_types):
+        """Yield tuples (entity, comp1, comp2, ...) for matching entities."""
+        for eid in self.query_entities(*component_types):
+            yield (eid,) + tuple(self._components[t][eid] for t in component_types)
 
 
 class CommandQueue:

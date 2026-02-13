@@ -1,30 +1,31 @@
 from collections import deque
-from ..systems.movement import MovementSystem
-from ..systems.combat import CombatSystem
-from ..command.commands import MoveCommand, BumpCommand, AttackCommand
+
 
 class CommandDispatcher:
+    """A minimal, generic command queue.
+
+    The framework does not assume any command shape or routing policy — the
+    dispatcher simply queues commands for host code or systems to process.
+    Host applications can pull commands using `pop_all()` or call `process()`
+    with a custom handler.
+    """
+
     def __init__(self):
         self.queue = deque()
 
-    def dispatch(self, command):
+    def dispatch(self, command) -> None:
         self.queue.append(command)
 
-    def process(self, runtime):
-        if not self.queue:
-            return False
-        while len(self.queue):
-            command = self.queue.popleft()
-            self.route(command, runtime)
-        return True
+    def pop_all(self):
+        items = list(self.queue)
+        self.queue.clear()
+        return items
 
-    def route(self, command, runtime):
-        if isinstance(command, MoveCommand):
-            cmds = runtime.systems[MovementSystem].update(command, runtime.store)
-            if cmds is not None:
-                for cmd in cmds:
-                    runtime.dispatcher.dispatch(cmd)
-        if isinstance(command, BumpCommand):
-            self.dispatch(AttackCommand(command.entity, command.target))
-        if isinstance(command, AttackCommand):
-            runtime.systems[CombatSystem].attack(command, runtime.store)
+    def process(self, handler: callable) -> None:
+        """Process all queued commands with `handler(command)`.
+
+        The handler is provided by the host and may dispatch new commands.
+        """
+        while self.queue:
+            cmd = self.queue.popleft()
+            handler(cmd)

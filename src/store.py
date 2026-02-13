@@ -1,32 +1,38 @@
-import random
-from .components import *
-from .map import Map
+"""Entity and component storage.
+
+This module wraps the core ECS World for backward compatibility.
+"""
+
+from .core import World
+
 
 class Store:
-    def __init__(self):
-        self.next_id = 0
-        self.components = {}
-        self.map = Map(48, 24)
-        self.map.generate()
-        
-    def create_entity(self) -> int:
-        eid = self.next_id
-        self.next_id += 1
-        return eid
+    """Backward-compatible wrapper around World."""
 
-    def add(self, entity, component):
-        self.components.setdefault(type(component), {})[entity] = component
+    def __init__(self):
+        self._world = World()
+
+    @property
+    def world(self) -> World:
+        return self._world
+
+    def create_entity(self) -> int:
+        return self._world.create_entity()
+
+    def add(self, entity: int, component) -> None:
+        self._world.add_component(entity, component)
 
     def get(self, component_type):
-        return self.components.get(component_type, {})
+        return self._world.get_components(component_type)
 
-    def destroy(self, entity: int):
-        for component in self.components.values():
-            component.pop(entity, None)
+    def query_entities(self, *component_types):
+        return self._world.query_entities(*component_types)
 
+    def query(self, *component_types):
+        return self._world.query(*component_types)
 
+    def has_component(self, entity: int, component_type) -> bool:
+        return self._world.has_component(entity, component_type)
 
-
-
-
-
+    def destroy(self, entity: int) -> None:
+        self._world.destroy_entity(entity)

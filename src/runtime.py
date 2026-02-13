@@ -1,39 +1,47 @@
-from .command.dispatcher import CommandDispatcher
-from .systems.movement import MovementSystem
-from .systems.combat import CombatSystem
-from .systems.ai import AiSystem
-from .systems.render import RenderSystem
-from .components import AI, Health, Destroyed
+"""Runtime: simple orchestration for World, Store and Dispatcher."""
+
+from .core import World, CommandQueue
 from .store import Store
+from .command.dispatcher import CommandDispatcher
+from .components import Destroyed
+
 
 class Runtime:
+    """Main runtime that orchestrates the ECS simulation."""
+
     def __init__(self):
-        self.systems = {}
-        self.store = Store()
-        self.dispatcher = CommandDispatcher()
-        self.register(MovementSystem)
-        self.register(CombatSystem)
-        self.register(AiSystem)
-        self.register(RenderSystem)
+        self._world = World()
+        self._store = Store()
+        self._dispatcher = CommandDispatcher()
+        self._commands = CommandQueue()
         self.steps = 0
-        self.running = True
-        
-    def register(self, system):
-        self.systems[system] = system()
+
+        # systems are registered by the host application or tests
+        # runtime keeps a World container but does not hardcode domain systems
+
+    @property
+    def store(self):
+        return self._store
+
+    @property
+    def world(self):
+        return self._world
+
+    def register(self, system, priority=0):
+        """Register a system with optional priority."""
+        self._world.add_system(system, priority)
 
     def step(self):
-        for entity in self.store.get(AI):
-            if entity in self.store.get(Health) and self.store.get(Health)[entity].hp > 0:
-                cmds = self.systems[AiSystem].think(self.store, self.dispatcher)
-                if cmds is not None:
-                    for cmd in cmds:
-                        self.dispatcher.dispatch(cmd)
-        self.dispatcher.process(self)
-        self.systems[RenderSystem].draw(self.store)
-        self.steps + 1
-        return self.cleanup()
+        """Execute one simulation step."""
+        # Pass store and dispatcher to systems so they can access components
+        # and dispatch commands. Host systems should accept signature
+        # `update(store, dispatcher)`.
+        self._world.step(self._store, self._dispatcher)
+        self.steps += 1
+        return self._cleanup()
 
-    def cleanup(self):
-        entities = list(self.store.get(Destroyed))
-        for entity in entities:
-            self.store.destroy(entity)
+    def _cleanup(self):
+        """Remove destroyed entities."""
+        destroyed = self._store.get(Destroyed)
+        for entity in list(destroyed.keys()):
+            self._store.destroy(entity)

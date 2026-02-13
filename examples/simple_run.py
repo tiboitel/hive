@@ -3,6 +3,9 @@
 Demonstrates creating a runtime, registering two minimal systems,
 creating entities and components, then stepping the world.
 """
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.runtime import Runtime
 from src.core import System
 from dataclasses import dataclass
