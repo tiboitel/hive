@@ -6,6 +6,8 @@ from src.command.dispatcher import CommandDispatcher
 from src.systems.render import RenderSystem
 from src.systems.ai import AiSystem
 
+import time
+
 def main():
     runtime = Runtime()
     store = runtime.store
@@ -15,21 +17,30 @@ def main():
 
     store.add(player, Position(12, 6))
     store.add(player, Renderable("@"))
-    store.add(player, Health(8, 8))
+    store.add(player, Health(10, 10))
     store.add(player, Combat(3, 3))
-    store.add(player, Player())
+    store.add(player, AI())
 
     enemy = store.create_entity()
     store.add(enemy, Position(18, 12))
     store.add(enemy, Renderable("g"))
-    store.add(enemy, Health(4, 4))
-    store.add(enemy, Combat(3, 1))
+    store.add(enemy, Health(2, 2))
+    store.add(enemy, Combat(2, 1))
+    store.add(enemy, AI())
+
+    enemy = store.create_entity()
+    store.add(enemy, Position(22, 13))
+    store.add(enemy, Renderable("g"))
+    store.add(enemy, Health(2, 2))
+    store.add(enemy, Combat(2, 1))
     store.add(enemy, AI())
 
     player_input = None
     while True:
         runtime.step()
-        player_input = input()
+        print(f"Step: {runtime.steps}")
+        time.sleep(0.5)
+        '''player_input = input()
         dy = 0;
         dx = 0;
         if player_input == "w":
@@ -44,7 +55,7 @@ def main():
             continue
         
         cmd = MoveCommand(player, dx, dy)
-        runtime.dispatcher.dispatch(cmd)
+        runtime.dispatcher.dispatch(cmd)'''
 
 if __name__ == "__main__":
     main()

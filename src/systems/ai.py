@@ -17,11 +17,20 @@ class AiSystem:
             dx = 0
         
         cmd = MoveCommand(entity, dx, dy)
-        return ([cmd]) 
+        return (cmd) 
 
-    def think(self, store, entity):
-        player = next(iter(store.get(Player)))
+    def think(self, store):
+        # Choose a player: prefer a Player component, otherwise fall back to Health
+        cmds = []
         for entity in store.get(AI):
-            if entity in store.get(Health):
-                return self.move_toward_entity(store, entity, player)
-
+            if entity in store.get(Health) and store.get(Health)[entity].hp > 0:
+                if len(store.get(Player)) > 0:
+                    target = next(iter(store.get(Player)))
+                else:
+                    target = next(
+                        (e for e in store.get(Health) if e != entity),
+                        None
+                    )
+                if target is not None:
+                    cmds.append(self.move_toward_entity(store, entity, target))
+        return cmds

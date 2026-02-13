@@ -6,7 +6,10 @@ WIDTH = 48
 
 class RenderSystem:
     def draw(self, store):
-        player = next(iter(store.get(Player)))
+        if len(store.get(Player)) > 0:
+            player = next(iter(store.get(Player)))
+        else:
+            player = 0
         os.system("clear")
         print(f"Name: Volo l'Explorateur\nHP: {store.get(Health)[player].hp} / { store.get(Health)[player].max_hp } ")
         print()

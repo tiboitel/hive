@@ -22,15 +22,13 @@ class Runtime:
         self.systems[system] = system()
 
     def step(self):
-        for entity in self.store.get(AI):
-            if entity in self.store.get(Health) and self.store.get(Health)[entity].hp > 0:
-                cmds = self.systems[AiSystem].think(self.store, self.dispatcher)
-                if cmds is not None:
-                    for cmd in cmds:
-                        self.dispatcher.dispatch(cmd)
+        cmds = self.systems[AiSystem].think(self.store)
+        if cmds is not None:
+            for cmd in cmds:
+                self.dispatcher.dispatch(cmd)
         self.dispatcher.process(self)
         self.systems[RenderSystem].draw(self.store)
-        self.steps + 1
+        self.steps = self.steps + 1
         return self.cleanup()
 
     def cleanup(self):

@@ -13,7 +13,7 @@ class Map:
 
                 if (x == 0 or x == self.width - 1) or (y == 0 or y == self.height - 1):
                     self.tiles.append("#")
-                elif (rand <= 10):
+                elif (rand <= 5):
                     self.tiles.append("#")
                 else:
                     self.tiles.append(".")
