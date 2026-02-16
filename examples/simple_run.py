@@ -7,7 +7,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.runtime import Runtime
-from src.core import System
+from src.core import System, World
 from dataclasses import dataclass
 
 @dataclass
@@ -20,9 +20,9 @@ class Renderable:
     symbol: str
 
 class ExampleRender(System):
-    def update(self, store, dispatcher):
-        positions = store.get(Position)
-        renderables = store.get(Renderable)
+    def update(self, world: World, dispatcher):
+        positions = world.store.get_components(Position)
+        renderables = world.store.get_components(Renderable)
         for eid, pos in positions.items():
             if eid in renderables:
                 print(f"Entity {eid} at ({pos.x},{pos.y}) => {renderables[eid].symbol}")
@@ -30,19 +30,19 @@ class ExampleRender(System):
 def main():
     runtime = Runtime()
     # register a simple render system
-    runtime.register(ExampleRender(), priority=10)
 
-    store = runtime.store
+    world = runtime.world
+    world.register(ExampleRender(), priority=10)
 
     # create two entities
-    a = store.create_entity()
-    b = store.create_entity()
+    a = world.create_entity()
+    b = world.create_entity()
 
-    store.add(a, Position(1, 2))
-    store.add(a, Renderable("A"))
+    world.add_component(a, Position(1, 2))
+    world.add_component(a, Renderable("A"))
 
-    store.add(b, Position(4, 5))
-    store.add(b, Renderable("B"))
+    world.add_component(b, Position(4, 5))
+    world.add_component(b, Renderable("B"))
 
     # run a few steps
     for _ in range(3):

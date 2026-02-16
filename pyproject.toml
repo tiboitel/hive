@@ -3,16 +3,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tiny_ecs"
-version = "0.0.1"
+name = "hive"
+version = "0.0.8"
 description = "A minimal, generic ECS micro-framework (runtime/core/store/command dispatcher)."
-authors = [ { name = "RogueCS Maintainer" } ]
+authors = [ { name = "tiboitel" } ]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.9"
 
 [project.urls]
-Homepage = "https://example.org/tiny_ecs"
+Homepage = "https://example.org/hive"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

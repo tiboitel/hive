@@ -1,16 +1,14 @@
-"""Playful example showing command usage with the ECS framework.
+"""Playful example showing command usage with built-in CommandRouter.
 
-Defines a simple `Move` command, a system that emits moves each tick and a
-system that handles commands to mutate `Position` components. Shows how a
-host application can use the framework's dispatcher without adding domain
-logic to the framework itself.
+Demonstrates the Command Router pattern: register command handlers by type
+with the runtime, and commands are automatically routed after each step.
 """
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from dataclasses import dataclass
 from src.runtime import Runtime
-from src.core import System
+from src.core import System, World
 
 
 @dataclass
@@ -31,37 +29,36 @@ class Move:
     dy: int
 
 
-class Emitter(System):
+class Movement(System):
     """Emits a Move command for the controlled entity each tick."""
 
-    def __init__(self, entity, pattern=None):
-        self.entity = entity
+    def __init__(self, pattern=None):
         self.tick = 0
         self.pattern = pattern or [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-    def update(self, store, dispatcher):
-        dx, dy = self.pattern[self.tick % len(self.pattern)]
-        dispatcher.dispatch(Move(self.entity, dx, dy))
+    def update(self, world: World, dispatcher):
+        for entity in world.store.query_entities(Position):
+            dx, dy = self.pattern[self.tick % len(self.pattern)]
+            dispatcher.dispatch(Move(entity, dx, dy))
         self.tick += 1
 
+    def handle_move(self, cmd: Move, world: World) -> None:
+        """Handler for Move commands.
+        
+        Receives the command and the world instance.
+        Access components through the world's component storage.
+        """
+        comps = world.store.get_components(Position)
+        if cmd.entity in comps:
+            pos = comps[cmd.entity]
+            pos.x += cmd.dx
+            pos.y += cmd.dy
 
-class CommandHandler(System):
-    """Handles Move commands pulled from the dispatcher."""
 
-    def update(self, store, dispatcher):
-        for cmd in dispatcher.pop_all():
-            if isinstance(cmd, Move):
-                comps = store.get(Position)
-                if cmd.entity in comps:
-                    pos = comps[cmd.entity]
-                    pos.x += cmd.dx
-                    pos.y += cmd.dy
-
-
-class Printer(System):
-    def update(self, store, dispatcher):
-        positions = store.get(Position)
-        renderables = store.get(Renderable)
+class Renderer(System):
+    def update(self, world: World, dispatcher):
+        positions = world.store.get_components(Position)
+        renderables = world.store.get_components(Renderable)
         out = []
         for eid in sorted(positions.keys()):
             pos = positions[eid]
@@ -73,19 +70,28 @@ class Printer(System):
 
 def main():
     runtime = Runtime()
-    store = runtime.store
+    world = runtime.world
 
     # spawn a playful entity
-    e = store.create_entity()
-    store.add(e, Position(0, 0))
-    store.add(e, Renderable("P"))
+    e = world.create_entity()
+    world.add_component(e, Position(0, 0))
+    world.add_component(e, Renderable("P"))
+   
+    # Additional commands can be registered here:
+    # runtime.router.register(JumpCommand, handle_jump)
+    # runtime.router.register(AttackCommand, handle_attack)
 
-    # register systems: emitter -> handler -> printer
-    runtime.register(Emitter(e), priority=5)
-    runtime.register(CommandHandler(), priority=10)
-    runtime.register(Printer(), priority=20)
+    # register systems: emitter -> printer
+    # Commands are auto-routed after systems run - no RouterSystem needed!
+    movement = Movement()
+    world.register(movement, priority=5)
+    world.register(Renderer(), priority=20)
 
-    print("Playful command demo (5 ticks)")
+    # Register command handler with the runtime's router
+    runtime.router.register(Move, movement.handle_move)
+ 
+    print("Playful command demo with built-in router (5 ticks)")
+    print("Commands are automatically routed to handlers after each step.")
     for _ in range(5):
         runtime.step()
 

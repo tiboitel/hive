@@ -1,79 +1,108 @@
-from typing import Callable, Dict, List, Tuple
+"""Core ECS: World, System, and entity/component management.
+
+World orchestrates the simulation. Store owns the data.
+"""
+from typing import Dict, List, Tuple, Iterator, Any, Type
+
+from .events import EventBus
+from .resources import ResourceRegistry
+from .store import Store
 
 
 class System:
-    def update(self, store, dispatcher):
+    """Base class for ECS systems.
+    
+    Systems implement game logic by processing entities with specific components.
+    """
+    
+    def update(self, world: 'World', dispatcher) -> None:
+        """Execute system logic.
+        
+        Args:
+            world: The World instance (access store via world.store)
+            dispatcher: CommandDispatcher for emitting commands
+        """
         raise NotImplementedError
 
 
 class World:
-    """Small world container: systems, entities and components."""
-
+    """Simulation container: owns Store, systems, event_bus, and resources.
+    
+    World is the simulation. Store owns the simulation data (entities, components).
+    Resources hold static data (config, assets).
+    
+    Example:
+        world = World()
+        e = world.store.create_entity()
+        world.store.add_component(e, Position(0, 0))
+        world.register(MovementSystem())
+        world.step(dispatcher)
+    """
+    
     def __init__(self):
+        self._store = Store()
         self._systems: List[Tuple[int, object]] = []
-        self._next_id = 0
-        self._components: Dict[type, Dict[int, object]] = {}
-
-    def add_system(self, system, priority: int = 0):
+        self.event_bus = EventBus()
+        self.resources = ResourceRegistry()
+    
+    @property
+    def store(self) -> Store:
+        """Access the entity/component store."""
+        return self._store
+    
+    # Convenience methods that delegate to store
+    def create_entity(self) -> int:
+        """Create a new entity."""
+        return self._store.create_entity()
+    
+    def destroy_entity(self, entity: int) -> None:
+        """Destroy an entity and all its components."""
+        self._store.destroy_entity(entity)
+    
+    def add_component(self, entity: int, component) -> None:
+        """Add a component to an entity."""
+        self._store.add_component(entity, component)
+    
+    def get_components(self, component_type: Type) -> Dict[int, Any]:
+        """Get all components of a specific type."""
+        return self._store.get_components(component_type)
+    
+    def has_component(self, entity: int, component_type: Type) -> bool:
+        """Check if an entity has a specific component."""
+        return self._store.has_component(entity, component_type)
+    
+    def remove_component(self, entity: int, component_type: Type) -> bool:
+        """Remove a component from an entity."""
+        return self._store.remove_component(entity, component_type)
+    
+    def query_entities(self, *component_types: Type) -> Iterator[int]:
+        """Query entity IDs with all component types."""
+        return self._store.query_entities(*component_types)
+    
+    def query(self, *component_types: Type) -> Iterator[Tuple[int, ...]]:
+        """Query entities with all component types.
+        
+        Yields tuples: (entity_id, component1, component2, ...)
+        """
+        return self._store.query(*component_types)
+    
+    # System management
+    def register(self, system, priority: int = 0) -> None:
+        """Register a system with optional priority (lower = earlier)."""
         self._systems.append((priority, system))
         self._systems.sort(key=lambda t: t[0])
-
-    def step(self, store=None, dispatcher=None):
-        for _, system in list(self._systems):
-            # systems implement their own update signature
-            method = getattr(system, "update", None)
-            if method is None:
-                continue
-            method(store, dispatcher)
-
-    # Entity/component API
-    def create_entity(self) -> int:
-        eid = self._next_id
-        self._next_id += 1
-        return eid
-
-    def add_component(self, entity: int, component) -> None:
-        self._components.setdefault(type(component), {})[entity] = component
-
-    def get_components(self, component_type):
-        return self._components.get(component_type, {})
-
-    def has_component(self, entity: int, component_type) -> bool:
-        return entity in self._components.get(component_type, {})
-
-    def destroy_entity(self, entity: int) -> None:
-        for comp in self._components.values():
-            comp.pop(entity, None)
-
-    # Query APIs
-    def query_entities(self, *component_types):
-        """Yield entity ids that have all requested component types.
-
-        Deterministic: yields ids in ascending order.
+    
+    def step(self, dispatcher=None) -> None:
+        """Execute one simulation step.
+        
+        Runs all systems in priority order, passing world and dispatcher.
         """
-        if not component_types:
-            return iter(())
-        sets = [set(self._components.get(t, {}).keys()) for t in component_types]
-        if not sets:
-            return iter(())
-        ids = set.intersection(*sets)
-        for eid in sorted(ids):
-            yield eid
-
-    def query(self, *component_types):
-        """Yield tuples (entity, comp1, comp2, ...) for matching entities."""
-        for eid in self.query_entities(*component_types):
-            yield (eid,) + tuple(self._components[t][eid] for t in component_types)
-
-
-class CommandQueue:
-    def __init__(self):
-        self._queue = []
-
-    def push(self, cmd):
-        self._queue.append(cmd)
-
-    def pop_all(self):
-        items = list(self._queue)
-        self._queue.clear()
-        return items
+        for _, system in list(self._systems):
+            method = getattr(system, "update", None)
+            if method is not None:
+                method(self, dispatcher)
+    
+    def snapshot(self):
+        """Create a serializable snapshot of the world state."""
+        from .serialize import snapshot as _snapshot
+        return _snapshot(self)
