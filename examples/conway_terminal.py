@@ -24,9 +24,9 @@ import random
 import select
 import termios
 import tty
+
 from dataclasses import dataclass
 from typing import List, Tuple
-
 from hive import Runtime
 from hive.core import System, World
 
@@ -37,7 +37,7 @@ DEAD = "."
 # Configuration
 ROWS = 24
 COLS = 80
-TICK = 0.15  # seconds between frames when running continuously
+TICK = 0.041 # seconds between frames when running continuously
 
 
 # ECS Components
@@ -197,7 +197,6 @@ PULSAR = [
     (-2, 4), (-1, 4), (0, 4), (1, 4), (2, 4),
 ]
 
-
 def get_char_nonblocking():
     """Get a single character without blocking, or return None."""
     # Check if input is available
@@ -316,7 +315,7 @@ def _run_interactive_loop(runtime, world: World, rows, cols):
                 time.sleep(now - last_step)
         else:
             # Small sleep to prevent CPU spinning when idle
-            time.sleep(0.022)
+            time.sleep(0.01)
 
 
 if __name__ == "__main__":
@@ -324,6 +323,5 @@ if __name__ == "__main__":
         run_terminal()
     except Exception as e:
         sys.stderr.write(f"Error: {e}\n")
-        import traceback
         traceback.print_exc()
         raise

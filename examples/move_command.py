@@ -96,7 +96,7 @@ def main():
     print("Commands are automatically routed to handlers after each step.")
     for _ in range(5):
         runtime.step()
-        time.sleep(0.025)
+        time.sleep(0.02)
 
 
 if __name__ == "__main__":

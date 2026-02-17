@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
 from hive.core import World
+from hive.events import EventBus
+from hive.resources import ResourceRegistry
 
 @dataclass
 class A:
@@ -34,9 +36,6 @@ def test_query_and_query_entities_basic():
 
 
 def test_event_bus_and_resources_minimal():
-    from hive.events import EventBus
-    from hive.resources import ResourceRegistry
-
     bus = EventBus()
     called = []
 
