@@ -1,9 +1,6 @@
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from dataclasses import dataclass
-from src.core import World
-from src.serialize import snapshot, load_into_world
+from hive.core import World
+from hive.serialize import snapshot, load_into_world
 
 
 @dataclass

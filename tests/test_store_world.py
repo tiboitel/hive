@@ -1,10 +1,8 @@
 """Test entity ID recycling functionality."""
-import sys, os
 from dataclasses import dataclass
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.core import World
-from src.store import Store
+from hive.core import World
+from hive.store import Store
 
 
 def test_store_entity_recycling():

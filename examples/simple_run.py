@@ -2,13 +2,12 @@
 
 Demonstrates creating a runtime, registering two minimal systems,
 creating entities and components, then stepping the world.
-"""
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.runtime import Runtime
-from src.core import System, World
+Run with: python examples/simple_run.py (from repo root after `pip install -e .`)
+"""
 from dataclasses import dataclass
+from hive import Runtime
+from hive.core import System, World
 
 @dataclass
 class Position:
@@ -29,9 +28,9 @@ class ExampleRender(System):
 
 def main():
     runtime = Runtime()
-    # register a simple render system
-
     world = runtime.world
+    
+    # register a simple render system
     world.register(ExampleRender(), priority=10)
 
     # create two entities

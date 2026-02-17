@@ -2,13 +2,14 @@
 
 Demonstrates the Command Router pattern: register command handlers by type
 with the runtime, and commands are automatically routed after each step.
+
+Run with: python examples/move_command.py (from repo root after `pip install -e .`)
 """
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import time
 
 from dataclasses import dataclass
-from src.runtime import Runtime
-from src.core import System, World
+from hive import Runtime
+from hive.core import System, World
 
 
 @dataclass
@@ -64,7 +65,7 @@ class Renderer(System):
             pos = positions[eid]
             sym = renderables.get(eid)
             ch = sym.symbol if sym else "?"
-            out.append(f"{ch}@({pos.x},{pos.y})")
+            out.append(f"{ch}{eid}@({pos.x},{pos.y})")
         print(" | ".join(out))
 
 
@@ -72,17 +73,18 @@ def main():
     runtime = Runtime()
     world = runtime.world
 
-    # spawn a playful entity
-    e = world.create_entity()
-    world.add_component(e, Position(0, 0))
-    world.add_component(e, Renderable("P"))
+    # spawn a range of entities
+    for _ in range(10):
+        e = world.create_entity()
+        world.add_component(e, Position(0, 0))
+        world.add_component(e, Renderable("P"))
    
     # Additional commands can be registered here:
     # runtime.router.register(JumpCommand, handle_jump)
     # runtime.router.register(AttackCommand, handle_attack)
 
-    # register systems: emitter -> printer
-    # Commands are auto-routed after systems run - no RouterSystem needed!
+    # register systems: movement -> renderer
+    # Commands are auto-routed after systems run - no Router needed !
     movement = Movement()
     world.register(movement, priority=5)
     world.register(Renderer(), priority=20)
@@ -94,6 +96,7 @@ def main():
     print("Commands are automatically routed to handlers after each step.")
     for _ in range(5):
         runtime.step()
+        time.sleep(0.025)
 
 
 if __name__ == "__main__":

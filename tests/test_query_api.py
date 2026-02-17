@@ -1,10 +1,6 @@
-import sys, os
 from dataclasses import dataclass
 
-# Ensure project root is on sys.path so `src` package can be imported
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from src.core import World
+from hive.core import World
 
 @dataclass
 class A:
@@ -38,8 +34,8 @@ def test_query_and_query_entities_basic():
 
 
 def test_event_bus_and_resources_minimal():
-    from src.events import EventBus
-    from src.resources import ResourceRegistry
+    from hive.events import EventBus
+    from hive.resources import ResourceRegistry
 
     bus = EventBus()
     called = []
