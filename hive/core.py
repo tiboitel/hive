@@ -98,10 +98,7 @@ class World:
         Runs all systems in priority order, passing world and dispatcher.
         """
         for _, system in list(self._systems):
-            method = getattr(system, "update", None)
-            if method is not None:
-                method(self, dispatcher)
-    
+            system.update(self, dispatcher) 
     def snapshot(self):
         """Create a serializable snapshot of the world state."""
         return _snapshot(self)
