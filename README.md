@@ -1,76 +1,296 @@
-# Hive
+# 🐝 Hive
 
-Hive is a minimal, dependency-light Entity-Component-System (ECS) micro-framework
-designed for small servers and game prototypes. It focuses on clarity, minimalism, and
-easy embedding into larger projects.
+**Hive** is a tiny, dependency-free Entity-Component-System (ECS) framework for Python.
 
-## Installation
+It gives you a clean simulation core — without magic, decorators, or heavy abstractions.
 
-Install from source or using your preferred packaging workflow. This project uses
-standard Python packaging metadata in `pyproject.toml` and targets modern build
-backends.
+Perfect for:
+
+- 🎮 Game prototypes
+- 🖥 Simulation servers
+- 🧪 Experiments
+- 🧩 Embedding into larger systems
+
+Small. Explicit. Predictable.
+
+---
+
+# Why Hive?
+
+Hive focuses on doing *just enough*:
+
+- ✅ Deterministic system execution
+- ✅ Minimal ECS data model
+- ✅ Optional command routing
+- ✅ Synchronous event bus
+- ✅ Snapshot & restore support
+- ✅ Zero runtime dependencies
+
+No async runtime.  
+No hidden reflection tricks.  
+No metaclass wizardry.  
+
+Just a clean simulation loop you control.
+
+---
+
+# Install
 
 ```bash
 pip install .
 ```
 
-## Package contents
+Or for development:
 
-- `src/core.py` — World, System base class, CommandQueue, and query APIs
-- `src/store.py` — backward-compatible wrapper around `World`
-- `src/runtime.py` — runtime orchestration and convenience aliases
-- `src/events.py` — synchronous EventBus
-- `src/resources.py` — ResourceRegistry
-- `src/serialize.py` — snapshot/load helpers (dataclass-friendly)
+```bash
+pip install -e .
+```
 
-## Examples
+Requires **Python 3.9+**
 
-- `examples/simple_run.py` — minimal host example
-- `examples/move_command.py` — command-driven demo
+---
 
-## Quick usage
+# 🚀 60-Second Example
 
-EventBus
+Create a tiny simulation:
 
-```py
-# subscribe
+```python
+from dataclasses import dataclass
+from hive import Runtime
+from hive.core import System
+
+@dataclass
+class Position:
+    x: int
+    y: int
+
+class Printer(System):
+    def update(self, world, dispatcher):
+        for eid, pos in world.query(Position):
+            print(f"Entity {eid} at ({pos.x}, {pos.y})")
+
+# Create runtime
+runtime = Runtime()
+world = runtime.world
+
+# Register system
+world.register(Printer())
+
+# Create entity
+e = world.create_entity()
+world.add_component(e, Position(3, 7))
+
+# Run one frame
+runtime.step()
+```
+
+Output:
+
+```
+Entity 0 at (3, 7)
+```
+
+That’s it.
+
+---
+
+# 🧠 How Hive Works
+
+Each simulation step:
+
+1. Systems run (can emit commands)
+2. Commands are routed to handlers
+3. Step counter increments
+
+Architecture overview:
+
+```
+Runtime
+ ├── World
+ │    ├── Store (entities & components)
+ │    ├── Systems
+ │    ├── EventBus
+ │    └── Resources
+ └── CommandRouter
+```
+
+Everything is explicit and inspectable.
+
+---
+
+# 📦 Core Concepts
+
+## Systems
+
+Systems contain logic:
+
+```python
+class Movement(System):
+    def update(self, world, dispatcher):
+        ...
+```
+
+Register them with priority:
+
+```python
+world.register(Movement(), priority=10)
+```
+
+Lower priority runs earlier.
+
+---
+
+## Components
+
+Plain Python objects (dataclasses recommended):
+
+```python
+@dataclass
+class Health:
+    hp: int
+```
+
+Attach to entities:
+
+```python
+world.add_component(entity_id, Health(100))
+```
+
+Query them:
+
+```python
+for eid, health in world.query(Health):
+    ...
+```
+
+---
+
+## Commands (Optional Pattern)
+
+Systems can emit commands:
+
+```python
+dispatcher.dispatch(Move(entity, dx=1, dy=0))
+```
+
+Register handlers:
+
+```python
+runtime.router.register(Move, handle_move)
+```
+
+Handlers receive:
+
+```python
+def handle_move(cmd, world):
+    ...
+```
+
+Commands are automatically processed after systems run.
+
+---
+
+## EventBus
+
+Simple synchronous pub/sub:
+
+```python
 token = runtime.event_bus.on(MyEvent, handler)
-# emit
-runtime.event_bus.emit(MyEvent(...), runtime.world, runtime._dispatcher)
+runtime.event_bus.emit(MyEvent(...), runtime.world)
+runtime.event_bus.off(token)
 ```
 
-Resources
+---
 
-```py
-runtime.resources.register('config', {'seed': 42})
-cfg = runtime.resources.get('config')
+## Resources
+
+Global shared objects stored by type:
+
+```python
+runtime.resources.register(Config(seed=42))
+cfg = runtime.resources.get(Config)
 ```
 
-Snapshot / Load
+Great for configuration or shared services.
 
-```py
+---
+
+## Snapshot / Restore
+
+Serialize world state:
+
+```python
 snap = runtime.world.snapshot()
-from src.serialize import dump_to_json, load_into_world
-with open('snap.json','w') as f:
-    dump_to_json(snap, f)
+```
 
-# later
-import json
-with open('snap.json') as f:
-    data = json.load(f)
+Dump:
+
+```python
+from hive.serialize import dump_to_json
+with open("save.json", "w") as f:
+    dump_to_json(snap, f)
+```
+
+Load:
+
+```python
+from hive.serialize import load_into_world
 load_into_world(data, runtime.world)
 ```
 
-## Development
+Dataclasses work out of the box.
 
-- Run tests: `pytest`
-- Lint/format: use your preferred tools; keep changes minimal to preserve the small
-  codebase and style.
+---
 
-## Contributing
+# 📁 Included Examples
 
-Keep changes focused, small, and well-documented.
+- `examples/simple_run.py` — minimal ECS usage
+- `examples/move_command.py` — command-driven movement demo
 
-## License
+Run:
 
-See the `LICENSE` file in the repository root.
+```bash
+python examples/simple_run.py
+```
+
+---
+
+# 🎯 Design Goals
+
+Hive is:
+
+- Minimal
+- Deterministic
+- Embeddable
+- Easy to reason about
+- Easy to extend
+
+Hive is not:
+
+- A full game engine
+- An async framework
+- An opinionated architecture
+
+It is a **simulation kernel**.
+
+Build whatever you want on top.
+
+---
+
+# 🤝 Contributing
+
+Keep changes:
+
+- Small
+- Clear
+- Well-documented
+- Backwards-compatible when possible
+
+Hive intentionally stays minimal.
+
+---
+
+# 📜 License
+
+MIT License  
+See `LICENSE` file.
