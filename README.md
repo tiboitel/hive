@@ -163,6 +163,13 @@ for eid, health in world.query(Health):
     ...
 ```
 
+Query a single component for matching entity:
+
+```python 
+world.query_single(eid, Health)
+    ...
+```
+
 ---
 
 ## Commands (Optional Pattern)

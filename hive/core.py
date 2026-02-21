@@ -85,6 +85,11 @@ class World:
         Yields tuples: (entity_id, component1, component2, ...)
         """
         return self._store.query(*component_types)
+
+    def query_single(self, eid: int, component_type: Type) -> Any | None:
+        """Query a component with matching entity id."""
+
+        return self._store.query_single(eid, component_type)
     
     # System management
     def register(self, system, priority: int = 0) -> None:
