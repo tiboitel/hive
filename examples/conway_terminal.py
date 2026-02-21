@@ -37,7 +37,7 @@ DEAD = "."
 # Configuration
 ROWS = 24
 COLS = 80
-TICK = 0.041 # seconds between frames when running continuously
+TICK = 0.2 # seconds between frames when running continuously
 
 
 # ECS Components

@@ -131,3 +131,8 @@ class Store:
         """
         for eid in self.query_entities(*component_types):
             yield (eid,) + tuple(self._components[t][eid] for t in component_types)
+
+    def query_single(self, eid: int, component_type: Type) -> Any | None:
+        """Get component for matching entity."""
+        return self._components.get(component_type, {}).get(eid)
+

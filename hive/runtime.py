@@ -56,6 +56,10 @@ class Runtime:
     def router(self) -> CommandRouter:
         """Access the command router for registering command handlers."""
         return self._router
+    @property
+    def dispatcher(self) -> CommandRouter:
+        """Access the command dispatcher for dispatching commands."""
+        return self._dispatcher
 
     def step(self) -> None:
         """Execute one simulation step.

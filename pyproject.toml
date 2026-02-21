@@ -1,18 +1,26 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "hive"
+name = "hive-ecs"
 version = "0.0.9"
-description = "A minimal, generic ECS micro-framework (runtime/core/store/event/command dispatcher)."
-authors = [ { name = "tiboitel" } ]
-license = { text = "MIT" }
+description = "A minimal, dependency-free Entity-Component-System (ECS) framework for Python."
 readme = "README.md"
 requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "tiboitel", email = "jules.boitelle@gmail.com"}
+]
+keywords = ["ecs", "entity-component-system", "python", "simulation", "game-dev"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Games/Entertainment",
+    "Topic :: Software Development :: Libraries"
+]
+urls = { "Homepage" = "https://github.com/tiboitel/hive" }
 
-[project.urls]
-Homepage = "https://example.org/hive"
+[build-system]
+requires = ["setuptools>=42","wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
