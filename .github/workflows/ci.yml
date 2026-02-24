@@ -40,10 +40,25 @@ jobs:
             exit 1
           fi
 
-          if python - <<'PY' 2>/dev/null
-import tomllib
-data = tomllib.loads(open('pyproject.toml','rb').read())
-print('dev' in data.get('project',{}).get('optional-dependencies',{}))
+          # Use a Python-3.10-compatible approach: install the lightweight `toml` parser
+          # to reliably inspect pyproject.toml. This avoids relying on stdlib tomllib
+          # which only exists on Python >= 3.11.
+          if [ ! -f pyproject.toml ]; then
+            echo "pyproject.toml not found"
+            exit 1
+          fi
+
+          pip install --upgrade pip
+          pip install toml
+
+          if python - <<'PY'
+import sys
+import toml
+data = toml.loads(open('pyproject.toml','r',encoding='utf-8').read())
+opt = data.get('project', {}).get('optional-dependencies', {})
+if 'dev' in opt:
+    sys.exit(0)
+sys.exit(1)
 PY
           then
             echo "Installing with dev extras"
