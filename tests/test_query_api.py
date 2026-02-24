@@ -4,13 +4,16 @@ from hive.core import World
 from hive.events import EventBus
 from hive.resources import ResourceRegistry
 
+
 @dataclass
 class A:
     v: int
 
+
 @dataclass
 class B:
     s: str
+
 
 def test_query_and_query_entities_basic():
     w = World()

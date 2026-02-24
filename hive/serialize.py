@@ -35,6 +35,7 @@ def _deserialize_component(obj):
     if cls is None:
         # try to locate class in loaded modules
         import sys
+
         for mod in list(sys.modules.values()):
             if not mod:
                 continue

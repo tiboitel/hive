@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  test:
+    name: Rufus + Pytest
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies (pyproject)
+        shell: bash
+        run: |
+          # Prefer installing dev extras from pyproject; fall back to installing rufus and pytest
+          if [ ! -f pyproject.toml ]; then
+            echo "pyproject.toml not found"
+            exit 1
+          fi
+
+          if python - <<'PY' 2>/dev/null
+import tomllib
+data = tomllib.loads(open('pyproject.toml','rb').read())
+print('dev' in data.get('project',{}).get('optional-dependencies',{}))
+PY
+          then
+            echo "Installing with dev extras"
+            pip install -e ".[dev]"
+          else
+            echo "No dev extras found; installing base package and rufus/pytest"
+            pip install -e .
+            pip install rufus pytest
+          fi
+
+      - name: Run rufus checks
+        run: rufus check
+
+      - name: Run tests (pytest)
+        run: |
+          mkdir -p reports
+          pytest -q --maxfail=1 --junitxml=reports/junit.xml
+
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: reports/junit.xml

@@ -1,6 +1,7 @@
-from typing import TypeVar, Type, overload
+from typing import TypeVar, Type
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class ResourceRegistry:
     """Lightweight resource storage for global/shared objects."""

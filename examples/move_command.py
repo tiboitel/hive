@@ -5,6 +5,7 @@ with the runtime, and commands are automatically routed after each step.
 
 Run with: python examples/move_command.py (from repo root after `pip install -e .`)
 """
+
 import time
 
 from dataclasses import dataclass
@@ -45,7 +46,7 @@ class Movement(System):
 
     def handle_move(self, cmd: Move, world: World) -> None:
         """Handler for Move commands.
-        
+
         Receives the command and the world instance.
         Access components through the world's component storage.
         """
@@ -78,7 +79,7 @@ def main():
         e = world.create_entity()
         world.add_component(e, Position(0, 0))
         world.add_component(e, Renderable("P"))
-   
+
     # Additional commands can be registered here:
     # runtime.router.register(JumpCommand, handle_jump)
     # runtime.router.register(AttackCommand, handle_attack)
@@ -91,7 +92,7 @@ def main():
 
     # Register command handler with the runtime's router
     runtime.router.register(Move, movement.handle_move)
- 
+
     print("Playful command demo with built-in router (5 ticks)")
     print("Commands are automatically routed to handlers after each step.")
     for _ in range(5):

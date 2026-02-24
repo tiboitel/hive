@@ -3,23 +3,12 @@
 The CommandRouter maps command types to handler functions, enabling
 type-safe command processing without isinstance checks.
 """
+
 from typing import Any, Callable, Dict, Type
 
 
 class CommandRouter:
-    """Routes commands to registered handlers based on command type.
-
-    Example:
-        router = CommandRouter()
-        router.register(MoveCommand, handle_move)
-        router.register(AttackCommand, handle_attack)
-
-        # Route a command
-        router.route(cmd, world)
-
-        # Process multiple commands
-        router.handle_all(commands, world)
-    """
+    """Routes commands to registered handlers based on command type."""
 
     def __init__(self):
         self._handlers: Dict[Type, Callable] = {}

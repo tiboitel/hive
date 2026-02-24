@@ -17,12 +17,13 @@ def test_snapshot_and_load_roundtrip(tmp_path):
     snap = snapshot(w)
     pfile = tmp_path / "snap.json"
     import json
-    with open(pfile, 'w') as f:
+
+    with open(pfile, "w") as f:
         json.dump(snap, f)
 
     # load into a fresh world
     w2 = World()
-    with open(pfile, 'r') as f:
+    with open(pfile, "r") as f:
         data = json.load(f)
     load_into_world(data, w2)
 
