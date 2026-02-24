@@ -7,7 +7,6 @@ from .command.router import CommandRouter
 
 T = TypeVar('T')
 
-
 class Runtime:
     """Main runtime that orchestrates the ECS simulation.
     
@@ -15,22 +14,6 @@ class Runtime:
     World is the simulation.
     Store owns the simulation data (entities, components).
     Resources hold static data (config, assets).
-    
-    Example:
-        runtime = Runtime()
-        
-        # Access world and its store
-        e = runtime.world.create_entity()
-        runtime.world.add_component(e, Position(0, 0))
-        
-        # Register systems
-        runtime.world.register(MovementSystem())
-        
-        # Register command handlers
-        runtime.router.register(MoveCommand, handle_move)
-        
-        # Run simulation
-        runtime.step()
     """
 
     def __init__(self):
@@ -39,7 +22,6 @@ class Runtime:
         self._router = CommandRouter()
         self.steps = 0
         
-        # Expose aliases for convenience
         self.event_bus = self._world.event_bus
 
     @property
@@ -57,17 +39,12 @@ class Runtime:
         """Access the command router for registering command handlers."""
         return self._router
     @property
-    def dispatcher(self) -> CommandRouter:
+    def dispatcher(self) -> CommandDispatcher:
         """Access the command dispatcher for dispatching commands."""
         return self._dispatcher
 
     def step(self) -> None:
         """Execute one simulation step.
-        
-        Steps:
-        1. Run all systems (can emit commands via dispatcher)
-        2. Route queued commands to registered handlers
-        3. Increment step counter
         
         Entity cleanup (e.g., Destroyed component) should be handled
         by user-registered systems.

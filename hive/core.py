@@ -30,13 +30,6 @@ class World:
     
     World is the simulation. Store owns the simulation data (entities, components).
     Resources hold static data (config, assets).
-    
-    Example:
-        world = World()
-        e = world.store.create_entity()
-        world.store.add_component(e, Position(0, 0))
-        world.register(MovementSystem())
-        world.step(dispatcher)
     """
     
     def __init__(self):

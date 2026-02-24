@@ -14,7 +14,7 @@ class ResourceRegistry:
         self._data[key] = resource
 
     def get(self, resource_type: Type[T]) -> T | None:
-        """Get resource by type. Raises KeyError if not found."""
+        """Get resource by type. None if not found."""
         if resource_type not in self._data:
             return None
         return self._data[resource_type]

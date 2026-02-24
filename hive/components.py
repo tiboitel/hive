@@ -7,7 +7,6 @@ AI, etc.) belong in host applications or example projects.
 
 from dataclasses import dataclass
 
-
 @dataclass
 class Destroyed:
     """Marker component indicating an entity should be removed."""

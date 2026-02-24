@@ -32,5 +32,4 @@ class EventBus:
             try:
                 handler(event, world, dispatcher)
             except Exception:
-                # Log exception but don't halt other handlers
                 logger.exception(f"Event handler failed for {event_type.__name__}")
