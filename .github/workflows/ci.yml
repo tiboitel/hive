@@ -40,34 +40,10 @@ jobs:
             exit 1
           fi
 
-          # Use a Python-3.10-compatible approach: install the lightweight `toml` parser
-          # to reliably inspect pyproject.toml. This avoids relying on stdlib tomllib
-          # which only exists on Python >= 3.11.
-          if [ ! -f pyproject.toml ]; then
-            echo "pyproject.toml not found"
-            exit 1
-          fi
-
+          # Minimal install: always install the package and test/lint tools.
           pip install --upgrade pip
-          pip install toml
-
-          if python - <<'PY'
-import sys
-import toml
-data = toml.loads(open('pyproject.toml','r',encoding='utf-8').read())
-opt = data.get('project', {}).get('optional-dependencies', {})
-if 'dev' in opt:
-    sys.exit(0)
-sys.exit(1)
-PY
-          then
-            echo "Installing with dev extras"
-            pip install -e ".[dev]"
-          else
-            echo "No dev extras found; installing base package and rufus/pytest"
-            pip install -e .
-            pip install rufus pytest
-          fi
+          pip install -e .
+          pip install pytest ruff
 
       - name: Run rufus checks
         run: rufus check
