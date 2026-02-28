@@ -9,7 +9,7 @@ def register_serializer(type_, to_dict, from_dict):
     _serializers[type_.__name__] = (type_, to_dict, from_dict)
 
 
-def _serialize_component(obj: Any):
+def _serialize_component(obj: Any) -> dict[str, Any]:
     tname = type(obj).__name__
     if dataclasses.is_dataclass(obj):
         return {"__type__": tname, "data": dataclasses.asdict(obj)}
@@ -22,7 +22,7 @@ def _serialize_component(obj: Any):
     raise TypeError(f"No serializer for component type {tname}")
 
 
-def _deserialize_component(obj):
+def _deserialize_component(obj: Any) -> dict[str, Any]:
     tname = obj["__type__"]
     data = obj["data"]
     if tname in _serializers:
@@ -48,7 +48,7 @@ def _deserialize_component(obj):
     raise TypeError(f"No deserializer for component type {tname}")
 
 
-def snapshot(world):
+def snapshot(world) -> dict[str, Any]:
     """Return a JSON-serializable snapshot of the world's components and next id."""
     payload = {
         "next_id": world.store._next_id,
@@ -71,7 +71,7 @@ def snapshot(world):
     return payload
 
 
-def load_into_world(snapshot_obj, world):
+def load_into_world(snapshot_obj, world) -> None:
     """Load snapshot into an existing World instance.
 
     Requires that component types referenced in the snapshot are available
@@ -94,5 +94,5 @@ def load_into_world(snapshot_obj, world):
             pass
 
 
-def dump_to_json(snapshot_obj, fp):
+def dump_to_json(snapshot_obj, fp) -> None:
     json.dump(snapshot_obj, fp)
