@@ -8,7 +8,7 @@ from .events import EventBus
 from .command.dispatcher import CommandDispatcher
 from .command.router import CommandRouter
 
-__version__ = "0.0.9"
+__version__ = "0.1.0"
 
 __all__ = [
     "Runtime",
