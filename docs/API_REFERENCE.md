@@ -43,6 +43,15 @@ Execute one simulation step:
 2. Route queued commands to registered handlers
 3. Increment step counter
 
+#### `drain() -> int`
+
+Route pending commands present at drain start toward registered handlers without running systems.
+
+- Only commands queued at the start of the call are processed (snapshot semantics).
+- Commands emitted by handlers during drain remain pending for subsequent processing.
+- Exceptions in individual handlers are logged and do not stop other handlers.
+- Returns the number of commands routed to handlers.
+
 ---
 
 ## World

@@ -71,6 +71,10 @@ The **Runtime** orchestrates the simulation loop. It is the main entry point for
 - Execute simulation steps in correct order
 - Provide convenient access to subsystems
 
+**Runtime notes:**
+- `drain()` processes a snapshot of pending commands (commands queued at call start); commands emitted by handlers remain pending.
+- Command handler exceptions are logged and isolated — a failing handler does not stop other commands.
+
 **Key Insight:** Runtime separates the "how" (orchestration) from the "what" (simulation logic). The World contains the simulation; Runtime runs it.
 
 ### 2. World
